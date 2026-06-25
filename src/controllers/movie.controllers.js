@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import { Movie } from "../models/movie.model.js";
 
 // año actual se usa como limite superior para validar year
@@ -95,6 +96,49 @@ export const createMovie = async (req, res) => {
 
     return res.status(201).json({
       message: "Película creada correctamente",
+      movie,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+// PUT /api/movies/:id de actualizacion
+export const updateMovie = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, genre, duration, year, synopsis } = req.body;
+
+    // la pelicula debe existir
+    const movie = await Movie.findByPk(id);
+    if (!movie) {
+      return res
+        .status(404)
+        .json({ message: `No existe una película con el id ${id}.` });
+    }
+
+    // validacion de los datos
+    const errorMessage = validateMovieData({ title, genre, duration, year, synopsis });
+    if (errorMessage) {
+      return res.status(400).json({ message: errorMessage });
+    }
+
+    // unicidad del titulo
+    const duplicatedMovie = await Movie.findOne({
+      where: { title, id: { [Op.ne]: id } },
+    });
+    if (duplicatedMovie) {
+      return res.status(400).json({
+        message: `Ya existe otra película registrada con el título '${title}'.`,
+      });
+    }
+
+    // actualizacion
+    await movie.update({ title, genre, duration, year, synopsis });
+
+    return res.status(200).json({
+      message: "Película actualizada correctamente",
       movie,
     });
   } catch (error) {
