@@ -1,11 +1,13 @@
 import express from "express";
+import { startDB } from "./src/config/database.js";
 
 const app = express();
 const PORT = 3000;
 
-// Middleware para que Express entienda el body en formato JSON
+// middleware para que express entienda el body en formato json
 app.use(express.json());
 
-app.listen(PORT, () => {
-  console.log(`Servidor listo en http://localhost:${PORT}`);
+app.listen(PORT, async () => {
+    await startDB();
+    console.log(`Servidor listo en http://localhost:${PORT}`);
 });
