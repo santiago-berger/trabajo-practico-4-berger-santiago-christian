@@ -146,3 +146,26 @@ export const updateMovie = async (req, res) => {
     return res.status(500).json({ message: "Error interno del servidor" });
   }
 };
+
+// DELETE /api/movies/:id de eliminacion verificando existencia
+export const deleteMovie = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const movie = await Movie.findByPk(id);
+    if (!movie) {
+      return res
+        .status(404)
+        .json({ message: `No existe una película con el id ${id}.` });
+    }
+
+    await movie.destroy();
+
+    return res.status(200).json({
+      message: `Película con id ${id} eliminada correctamente`,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
